@@ -57,6 +57,7 @@
 		2D7C114A1B86C7CD00B81E11 /* SpectacleShortcutUserDefaultsStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D7C11491B86C7CD00B81E11 /* SpectacleShortcutUserDefaultsStorage.m */; };
 		2D7CF9EB1C6FED50004DC708 /* SpectacleWindowPositionCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D7CF9EA1C6FED50004DC708 /* SpectacleWindowPositionCalculator.m */; };
 		2D8DA04D147E0FA0003BE1D3 /* Defaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0706C0431191092B0068F04B /* Defaults.plist */; };
+		A1B2C3D42C00000200000001 /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42C00000100000001 /* LICENSE.md */; };
 		2D8DA056147E113D003BE1D3 /* SpectacleShortcutManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07678096118679C600614FB5 /* SpectacleShortcutManager.m */; };
 		2D8DA057147E113D003BE1D3 /* SpectacleUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BB542C1186662F0045663F /* SpectacleUtilities.m */; };
 		2D8DA058147E113D003BE1D3 /* SpectacleWindowPositionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 072EACFF118A4D5A0015FC8A /* SpectacleWindowPositionManager.m */; };
@@ -103,6 +104,7 @@
 
 /* Begin PBXFileReference section */
 		0706C0431191092B0068F04B /* Defaults.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Defaults.plist; path = "Spectacle/Resources/Property Lists/Defaults.plist"; sourceTree = "<group>"; };
+		A1B2C3D42C00000100000001 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		072EACFE118A4D5A0015FC8A /* SpectacleWindowPositionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = SpectacleWindowPositionManager.h; path = Spectacle/Sources/SpectacleWindowPositionManager.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		072EACFF118A4D5A0015FC8A /* SpectacleWindowPositionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = SpectacleWindowPositionManager.m; path = Spectacle/Sources/SpectacleWindowPositionManager.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		07678095118679C600614FB5 /* SpectacleShortcutManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = SpectacleShortcutManager.h; path = Spectacle/Sources/SpectacleShortcutManager.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -284,6 +286,7 @@
 		089C166AFE841209C02AAC07 /* Spectacle */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D42C00000100000001 /* LICENSE.md */,
 				2D89B5731B8133E900F9FC1C /* Spectacle */,
 				2DA5B7C719F8BA79007EDE8E /* SpectacleSpecs */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
@@ -632,6 +635,7 @@
 				2D8DA04D147E0FA0003BE1D3 /* Defaults.plist in Resources */,
 				2DA23EFC1B7D736100C9E8EF /* Images.xcassets in Resources */,
 				2DC4E3D51AD84E5C0022ABF0 /* InfoPlist.strings in Resources */,
+				A1B2C3D42C00000200000001 /* LICENSE.md in Resources */,
 				2DC4E3D61AD84E5C0022ABF0 /* Localizable.strings in Resources */,
 				2D5565B1181EDB7F00EFB43A /* Security & Privacy System Preferences.scpt in Resources */,
 				2D58CC391C7030B800E3DC74 /* Window Position Calculations in Resources */,
