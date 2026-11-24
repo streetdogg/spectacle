@@ -113,13 +113,15 @@ static NSString *labelForShortcutName(NSString *shortcutName)
 
 - (void)buildWindow
 {
-  NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0.0, 0.0, 700.0, 500.0)
+  NSView *contentView = [self buildContentView];
+  NSWindow *window = [[NSWindow alloc] initWithContentRect:NSZeroRect
                                                  styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
                                                    backing:NSBackingStoreBuffered
                                                      defer:NO];
   window.title = [@"Spectacle " stringByAppendingString:SpectacleUtilities.applicationVersion];
   window.releasedWhenClosed = NO;
-  window.contentView = [self buildContentView];
+  window.contentView = contentView;
+  [window setContentSize:contentView.fittingSize];
   [window center];
   self.window = window;
 }
@@ -131,6 +133,8 @@ static NSString *labelForShortcutName(NSString *shortcutName)
   columns.orientation = NSUserInterfaceLayoutOrientationHorizontal;
   columns.spacing = 40.0;
   columns.alignment = NSLayoutAttributeTop;
+  [columns setHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
+  [columns setHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
 
   NSView *footer = [self buildFooterView];
 
@@ -142,6 +146,8 @@ static NSString *labelForShortcutName(NSString *shortcutName)
   content.spacing = 16.0;
   content.alignment = NSLayoutAttributeLeading;
   content.translatesAutoresizingMaskIntoConstraints = NO;
+  [content setHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
+  [content setHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
 
   NSView *container = [NSView new];
   [container addSubview:content];
@@ -151,6 +157,7 @@ static NSString *labelForShortcutName(NSString *shortcutName)
     [content.topAnchor constraintEqualToAnchor:container.topAnchor constant:20.0],
     [content.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-16.0],
     [separator.widthAnchor constraintEqualToAnchor:content.widthAnchor],
+    [footer.widthAnchor constraintEqualToAnchor:content.widthAnchor],
   ]];
 
   return container;
@@ -212,7 +219,10 @@ static NSString *labelForShortcutName(NSString *shortcutName)
                                                target:self
                                                action:@selector(restoreDefaults:)];
 
-  NSStackView *footer = [NSStackView stackViewWithViews:@[_loginItemCheckbox, _statusItemPopup, restoreButton]];
+  NSView *spacer = [NSView new];
+  [spacer setContentHuggingPriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+  NSStackView *footer = [NSStackView stackViewWithViews:@[_loginItemCheckbox, _statusItemPopup, spacer, restoreButton]];
   footer.orientation = NSUserInterfaceLayoutOrientationHorizontal;
   footer.spacing = 16.0;
   footer.alignment = NSLayoutAttributeCenterY;
