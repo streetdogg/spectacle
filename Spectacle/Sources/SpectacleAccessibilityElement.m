@@ -73,12 +73,17 @@
 
 - (AXValueRef)valueOfAttribute:(CFStringRef)attribute type:(AXValueType)type
 {
-  if (CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID()) {
-    CFTypeRef value;
-    AXError result;
-    result = AXUIElementCopyAttributeValue(_underlyingElement, attribute, (CFTypeRef *)&value);
-    if ((result == kAXErrorSuccess) && (AXValueGetType(value) == type)) {
-      return value;
+  if (_underlyingElement != NULL && CFGetTypeID(_underlyingElement) == AXUIElementGetTypeID()) {
+    CFTypeRef value = NULL;
+    AXError result = AXUIElementCopyAttributeValue(_underlyingElement, attribute, &value);
+    if (result == kAXErrorSuccess) {
+      if (value != NULL && AXValueGetType(value) == type) {
+        return value;
+      }
+      if (value != NULL) {
+        CFRelease(value);
+      }
+      NSLog(@"Unexpected AXValueType for attribute: %@", attribute);
     } else {
       NSLog(@"There was a problem getting the value of the specified attribute: %@ (error code %d)", attribute, result);
     }
@@ -99,14 +104,19 @@
   CGRect result = CGRectNull;
   CFTypeRef positionValue = [self valueOfAttribute:kAXPositionAttribute type:kAXValueCGPointType];
   CFTypeRef sizeValue = [self valueOfAttribute:kAXSizeAttribute type:kAXValueCGSizeType];
-  CGPoint position;
-  CGSize size;
-  AXValueGetValue(positionValue, kAXValueCGPointType, (void *)&position);
-  AXValueGetValue(sizeValue, kAXValueCGSizeType, (void *)&size);
   if ((positionValue != NULL) && (sizeValue != NULL)) {
+    CGPoint position = CGPointZero;
+    CGSize size = CGSizeZero;
+    if (AXValueGetValue(positionValue, kAXValueCGPointType, (void *)&position)
+        && AXValueGetValue(sizeValue, kAXValueCGSizeType, (void *)&size)) {
+      result = CGRectMake(position.x, position.y, size.width, size.height);
+    }
+  }
+  if (positionValue != NULL) {
     CFRelease(positionValue);
+  }
+  if (sizeValue != NULL) {
     CFRelease(sizeValue);
-    result = CGRectMake(position.x, position.y, size.width, size.height);
   }
   return result;
 }
@@ -126,7 +136,11 @@
 
 + (CGRect)normalizeCoordinatesOfRect:(CGRect)rect frameOfScreen:(CGRect)frameOfScreen
 {
-  CGRect frameOfScreenWithMenuBar = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSScreen *primaryScreen = [NSScreen screens].firstObject;
+  if (!primaryScreen) {
+    return rect;
+  }
+  CGRect frameOfScreenWithMenuBar = primaryScreen.frame;
   rect.origin.y = frameOfScreen.size.height - NSMaxY(rect) + (frameOfScreenWithMenuBar.size.height - frameOfScreen.size.height);
   return rect;
 }

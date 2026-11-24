@@ -96,14 +96,24 @@
     } else if (CGPointEqualToPoint(screenTwo.frame.origin, CGPointMake(0, 0))) {
       return NSOrderedDescending;
     }
-    return (NSComparisonResult)(screenTwo.frame.origin.y - screenOne.frame.origin.y);
+    if (screenTwo.frame.origin.y < screenOne.frame.origin.y) {
+      return NSOrderedAscending;
+    } else if (screenTwo.frame.origin.y > screenOne.frame.origin.y) {
+      return NSOrderedDescending;
+    }
+    return NSOrderedSame;
   }] sortedArrayWithOptions:NSSortStable usingComparator:^(NSScreen *screenOne, NSScreen *screenTwo) {
     if (CGPointEqualToPoint(screenOne.frame.origin, CGPointMake(0, 0))) {
       return NSOrderedAscending;
     } else if (CGPointEqualToPoint(screenTwo.frame.origin, CGPointMake(0, 0))) {
       return NSOrderedDescending;
     }
-    return (NSComparisonResult)(screenTwo.frame.origin.x - screenOne.frame.origin.x);
+    if (screenTwo.frame.origin.x < screenOne.frame.origin.x) {
+      return NSOrderedAscending;
+    } else if (screenTwo.frame.origin.x > screenOne.frame.origin.x) {
+      return NSOrderedDescending;
+    }
+    return NSOrderedSame;
   }];
 }
 

@@ -15,6 +15,8 @@
 @implementation SpectacleAppDelegate
 {
   NSStatusItem *_statusItem;
+  NSMenuItem *_disableShortcutsForAnHourMenuItem;
+  NSMenuItem *_disableShortcutsForApplicationMenuItem;
   id<SpectacleShortcutStorage> _shortcutStorage;
   SpectacleShortcutManager *_shortcutManager;
   SpectacleWindowPositionManager *_windowPositionManager;
@@ -101,6 +103,15 @@
 - (NSMenu *)statusMenu
 {
   NSMenu *menu = [NSMenu new];
+  menu.delegate = self;
+
+  NSMenuItem *aboutItem = [[NSMenuItem alloc] initWithTitle:@"About Spectacle"
+                                                     action:@selector(showAboutPanel:)
+                                              keyEquivalent:@""];
+  aboutItem.target = self;
+  [menu addItem:aboutItem];
+
+  [menu addItem:[NSMenuItem separatorItem]];
 
   NSMenuItem *preferencesItem = [[NSMenuItem alloc] initWithTitle:@"Preferences…"
                                                            action:@selector(showPreferencesWindow:)
@@ -112,16 +123,17 @@
 
   NSMenuItem *disableItem = [[NSMenuItem alloc] initWithTitle:@"Disable Shortcuts" action:nil keyEquivalent:@""];
   NSMenu *disableMenu = [NSMenu new];
-  NSMenuItem *hourItem = [[NSMenuItem alloc] initWithTitle:@"For an Hour"
-                                                    action:@selector(disableOrEnableShortcutsForAnHour:)
-                                             keyEquivalent:@""];
-  hourItem.target = self;
-  [disableMenu addItem:hourItem];
-  NSMenuItem *applicationItem = [[NSMenuItem alloc] initWithTitle:@"For the Current Application"
-                                                           action:@selector(disableOrEnableShortcutsForApplication:)
-                                                    keyEquivalent:@""];
-  applicationItem.target = self;
-  [disableMenu addItem:applicationItem];
+  disableMenu.autoenablesItems = NO;
+  _disableShortcutsForAnHourMenuItem = [[NSMenuItem alloc] initWithTitle:@"For an Hour"
+                                                                  action:@selector(disableOrEnableShortcutsForAnHour:)
+                                                           keyEquivalent:@""];
+  _disableShortcutsForAnHourMenuItem.target = self;
+  [disableMenu addItem:_disableShortcutsForAnHourMenuItem];
+  _disableShortcutsForApplicationMenuItem = [[NSMenuItem alloc] initWithTitle:@"For the Current Application"
+                                                                       action:@selector(disableOrEnableShortcutsForApplication:)
+                                                                keyEquivalent:@""];
+  _disableShortcutsForApplicationMenuItem.target = self;
+  [disableMenu addItem:_disableShortcutsForApplicationMenuItem];
   disableItem.submenu = disableMenu;
   [menu addItem:disableItem];
 
@@ -134,6 +146,30 @@
   [menu addItem:quitItem];
 
   return menu;
+}
+
+#pragma mark - NSMenuDelegate
+
+- (void)menuWillOpen:(NSMenu *)menu
+{
+  _disableShortcutsForAnHourMenuItem.state = _shortcutsAreDisabledForAnHour
+    ? NSControlStateValueOn
+    : NSControlStateValueOff;
+
+  NSRunningApplication *frontmostApplication = [NSWorkspace sharedWorkspace].frontmostApplication;
+  NSString *bundleIdentifier = frontmostApplication.bundleIdentifier;
+  if (!bundleIdentifier || [_blacklistedApplications containsObject:bundleIdentifier]) {
+    _disableShortcutsForApplicationMenuItem.title = @"For the Current Application";
+    _disableShortcutsForApplicationMenuItem.state = NSControlStateValueOff;
+    _disableShortcutsForApplicationMenuItem.enabled = NO;
+  } else {
+    NSString *applicationName = frontmostApplication.localizedName ?: @"the Current Application";
+    _disableShortcutsForApplicationMenuItem.title = [NSString stringWithFormat:@"For %@", applicationName];
+    _disableShortcutsForApplicationMenuItem.state = [_disabledApplications containsObject:bundleIdentifier]
+      ? NSControlStateValueOn
+      : NSControlStateValueOff;
+    _disableShortcutsForApplicationMenuItem.enabled = YES;
+  }
 }
 
 #pragma mark - Shortcut management
@@ -153,19 +189,25 @@
   }
 }
 
-- (void)enableShortcutsIfPermitted
+- (void)enableShortcutsIfPermittedForApplication:(NSRunningApplication *)application
 {
   if (_shortcutsAreDisabledForAnHour) {
     return;
   }
 
-  NSRunningApplication *frontmostApplication = [NSWorkspace sharedWorkspace].frontmostApplication;
-  if ([_blacklistedApplications containsObject:frontmostApplication.bundleIdentifier]
-      || [_disabledApplications containsObject:frontmostApplication.bundleIdentifier]) {
+  NSString *bundleIdentifier = application.bundleIdentifier;
+  if (bundleIdentifier
+      && ([_blacklistedApplications containsObject:bundleIdentifier]
+          || [_disabledApplications containsObject:bundleIdentifier])) {
     return;
   }
 
   [_shortcutManager registerShortcuts];
+}
+
+- (void)enableShortcutsIfPermitted
+{
+  [self enableShortcutsIfPermittedForApplication:[NSWorkspace sharedWorkspace].frontmostApplication];
 }
 
 - (void)disableShortcutsIfFrontmostApplicationIsBlacklistedOrDisabled
@@ -199,11 +241,15 @@
 - (IBAction)disableOrEnableShortcutsForApplication:(id)sender
 {
   NSRunningApplication *frontmostApplication = [NSWorkspace sharedWorkspace].frontmostApplication;
-  if ([_disabledApplications containsObject:frontmostApplication.bundleIdentifier]) {
-    [_disabledApplications removeObject:frontmostApplication.bundleIdentifier];
+  NSString *bundleIdentifier = frontmostApplication.bundleIdentifier;
+  if (!bundleIdentifier) {
+    return;
+  }
+  if ([_disabledApplications containsObject:bundleIdentifier]) {
+    [_disabledApplications removeObject:bundleIdentifier];
     [self enableShortcutsIfPermitted];
   } else {
-    [_disabledApplications addObject:frontmostApplication.bundleIdentifier];
+    [_disabledApplications addObject:bundleIdentifier];
     [_shortcutManager unregisterShortcuts];
   }
   [NSUserDefaults.standardUserDefaults setObject:_disabledApplications.allObjects forKey:@"DisabledApplications"];
@@ -211,14 +257,34 @@
 
 #pragma mark - Actions
 
+- (void)activateApplication
+{
+  if (@available(macOS 14.0, *)) {
+    [NSApp activate];
+  } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [NSApp activateIgnoringOtherApps:YES];
+#pragma clang diagnostic pop
+  }
+}
+
+- (IBAction)showAboutPanel:(id)sender
+{
+  [self activateApplication];
+  [NSApp orderFrontStandardAboutPanel:sender];
+}
+
 - (IBAction)showPreferencesWindow:(id)sender
 {
+  [self activateApplication];
   [_preferencesController showWindow:sender];
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)application hasVisibleWindows:(BOOL)visibleWindows
 {
-  [self showPreferencesWindow:self];
+  [NSUserDefaults.standardUserDefaults setBool:YES forKey:@"StatusItemEnabled"];
+  [self enableStatusItem];
   return YES;
 }
 
@@ -226,6 +292,7 @@
 
 - (void)displayAccessibilityPrompt
 {
+  [self activateApplication];
   NSAlert *alert = [NSAlert new];
   alert.alertStyle = NSAlertStyleWarning;
   alert.messageText = @"Spectacle requires Accessibility access";
@@ -272,9 +339,13 @@
 - (void)applicationDidActivate:(NSNotification *)notification
 {
   NSRunningApplication *application = notification.userInfo[NSWorkspaceApplicationKey];
-  if ([_blacklistedApplications containsObject:application.bundleIdentifier]
-      || [_disabledApplications containsObject:application.bundleIdentifier]) {
+  NSString *bundleIdentifier = application.bundleIdentifier;
+  if (bundleIdentifier
+      && ([_blacklistedApplications containsObject:bundleIdentifier]
+          || [_disabledApplications containsObject:bundleIdentifier])) {
     [_shortcutManager unregisterShortcuts];
+  } else {
+    [self enableShortcutsIfPermittedForApplication:application];
   }
 }
 

@@ -25,7 +25,7 @@
 - (BOOL)isShortcutValid:(SpectacleShortcut *)shortcut error:(NSError **)error
 {
   CFArrayRef shortcuts = NULL;
-  if (CopySymbolicHotKeys(&shortcuts)) {
+  if (CopySymbolicHotKeys(&shortcuts) != noErr || shortcuts == NULL) {
     return YES;
   }
   for (CFIndex i = 0; i < CFArrayGetCount(shortcuts); i++) {
@@ -46,9 +46,11 @@
                                                     description:description
                                              recoverySuggestion:recoverySuggestion];
       }
+      CFRelease(shortcuts);
       return NO;
     }
   }
+  CFRelease(shortcuts);
   for (id<SpectacleShortcutValidator> validator in _validators) {
     if ([validator conformsToProtocol:@protocol(SpectacleShortcutValidator)]
         && ![validator isShortcutValid:shortcut shortcutManager:_shortcutManager]) {
@@ -83,7 +85,9 @@ static NSInteger keyCodeFromDictionary(CFDictionaryRef dictionary)
 {
   CFNumberRef keyCodeFromDictionary = (CFNumberRef)CFDictionaryGetValue(dictionary, kHISymbolicHotKeyCode);
   NSInteger keyCode = 0;
-  CFNumberGetValue(keyCodeFromDictionary, kCFNumberLongType, &keyCode);
+  if (keyCodeFromDictionary != NULL) {
+    CFNumberGetValue(keyCodeFromDictionary, kCFNumberLongType, &keyCode);
+  }
   return keyCode;
 }
 
@@ -91,7 +95,9 @@ static NSUInteger modifiersFromDictionary(CFDictionaryRef dictionary)
 {
   CFNumberRef modifiersFromDictionary = (CFNumberRef)CFDictionaryGetValue(dictionary, kHISymbolicHotKeyModifiers);
   NSUInteger modifiers = 0;
-  CFNumberGetValue(modifiersFromDictionary, kCFNumberLongType, &modifiers);
+  if (modifiersFromDictionary != NULL) {
+    CFNumberGetValue(modifiersFromDictionary, kCFNumberLongType, &modifiers);
+  }
   return modifiers;
 }
 

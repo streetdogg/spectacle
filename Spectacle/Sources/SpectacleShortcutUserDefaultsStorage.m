@@ -23,9 +23,9 @@
 {
   NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
   for (SpectacleShortcut *shortcut in shortcuts) {
-    NSData *shortcutData = [NSKeyedArchiver archivedDataWithRootObject:shortcut requiringSecureCoding:NO error:nil];
+    NSData *shortcutData = [NSKeyedArchiver archivedDataWithRootObject:shortcut requiringSecureCoding:YES error:nil];
     NSString *shortcutName = shortcut.shortcutName;
-    if (![shortcutData isEqualToData:[userDefaults dataForKey:shortcutName]]) {
+    if (shortcutData && ![shortcutData isEqualToData:[userDefaults dataForKey:shortcutName]]) {
       [userDefaults setObject:shortcutData forKey:shortcutName];
     }
   }
@@ -66,10 +66,16 @@
   NSMutableArray<SpectacleShortcut *> *shortcuts = [NSMutableArray new];
   for (NSData *shortcutData in dictionary.allValues) {
     NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:shortcutData error:nil];
-    unarchiver.requiresSecureCoding = NO;
-    SpectacleShortcut *shortcut = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+    if (!unarchiver) {
+      continue;
+    }
+    unarchiver.requiresSecureCoding = YES;
+    SpectacleShortcut *shortcut = [unarchiver decodeObjectOfClass:[SpectacleShortcut class]
+                                                           forKey:NSKeyedArchiveRootObjectKey];
     [unarchiver finishDecoding];
-    [shortcuts addObject:[shortcut copyWithShortcutAction:action]];
+    if (shortcut) {
+      [shortcuts addObject:[shortcut copyWithShortcutAction:action]];
+    }
   }
   return shortcuts;
 }

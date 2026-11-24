@@ -4,6 +4,7 @@
 
 #import "SpectacleShortcut.h"
 #import "SpectacleShortcutRecorderDelegate.h"
+#import "SpectacleShortcutTranslations.h"
 #import "SpectacleShortcutValidation.h"
 
 @interface SpectacleShortcutRecorder ()
@@ -37,8 +38,7 @@
   self.wantsLayer = YES;
   self.layer.cornerRadius = 6.0;
   self.layer.borderWidth = 1.0;
-  self.layer.borderColor = [NSColor separatorColor].CGColor;
-  self.layer.backgroundColor = [NSColor controlBackgroundColor].CGColor;
+  [self updateLayerColors];
 
   _label = [NSTextField labelWithString:@"Click to record"];
   _label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -71,6 +71,28 @@
   return YES;
 }
 
+- (BOOL)resignFirstResponder
+{
+  if (_isRecording) {
+    [self stopRecording];
+  }
+  return [super resignFirstResponder];
+}
+
+- (void)viewDidChangeEffectiveAppearance
+{
+  [super viewDidChangeEffectiveAppearance];
+  [self updateLayerColors];
+}
+
+- (void)updateLayerColors
+{
+  [self.effectiveAppearance performAsCurrentDrawingAppearance:^{
+    self.layer.borderColor = (self->_isRecording ? [NSColor controlAccentColor] : [NSColor separatorColor]).CGColor;
+    self.layer.backgroundColor = [NSColor controlBackgroundColor].CGColor;
+  }];
+}
+
 - (void)setShortcut:(SpectacleShortcut *)shortcut
 {
   _shortcut = shortcut;
@@ -93,14 +115,14 @@
 - (void)startRecording
 {
   _isRecording = YES;
-  self.layer.borderColor = [NSColor controlAccentColor].CGColor;
+  [self updateLayerColors];
   [self updateDisplay];
 }
 
 - (void)stopRecording
 {
   _isRecording = NO;
-  self.layer.borderColor = [NSColor separatorColor].CGColor;
+  [self updateLayerColors];
   [self updateDisplay];
 }
 
@@ -125,6 +147,19 @@
   NSEventModifierFlags modifiers = event.modifierFlags
     & (NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand);
 
+  if (modifiers == 0 && (event.keyCode == kVK_Delete || event.keyCode == kVK_ForwardDelete)) {
+    if (_shortcut && ![_shortcut isClearedShortcut]) {
+      [self clearShortcut:self];
+    }
+    [self stopRecording];
+    return;
+  }
+
+  if (![SpectacleShortcut validCocoaModifiers:modifiers]) {
+    NSBeep();
+    return;
+  }
+
   SpectacleShortcut *shortcut = [[SpectacleShortcut alloc] initWithShortcutName:_shortcutName
                                                                 shortcutKeyCode:event.keyCode
                                                               shortcutModifiers:modifiers];
@@ -142,9 +177,13 @@
 
 - (void)flagsChanged:(NSEvent *)event
 {
-  if (_isRecording) {
-    [self setNeedsDisplay:YES];
+  if (!_isRecording) {
+    return;
   }
+  NSEventModifierFlags modifiers = event.modifierFlags
+    & (NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand);
+  NSString *modifierString = SpectacleTranslateModifiers(modifiers);
+  _label.stringValue = modifierString.length > 0 ? modifierString : @"Type shortcut…";
 }
 
 - (void)clearShortcut:(id)sender

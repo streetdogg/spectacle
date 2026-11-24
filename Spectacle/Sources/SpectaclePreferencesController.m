@@ -90,9 +90,23 @@ static NSString *labelForShortcutName(NSString *shortcutName)
     _windowPositionManager = windowPositionManager;
     _shortcutStorage = shortcutStorage;
     [self buildWindow];
-    [self loadRegisteredShortcuts];
   }
   return self;
+}
+
+- (void)showWindow:(id)sender
+{
+  [self loadRegisteredShortcuts];
+  [self updateFooterControls];
+  [super showWindow:sender];
+}
+
+- (void)updateFooterControls
+{
+  _loginItemCheckbox.state = [SpectacleLoginItemHelper isLoginItemEnabledForBundle:NSBundle.mainBundle]
+    ? NSControlStateValueOn
+    : NSControlStateValueOff;
+  [_statusItemPopup selectItemAtIndex:[NSUserDefaults.standardUserDefaults boolForKey:@"StatusItemEnabled"] ? 0 : 1];
 }
 
 #pragma mark - Window construction
@@ -257,13 +271,29 @@ didClearExistingShortcut:(SpectacleShortcut *)shortcut
   } else {
     [SpectacleLoginItemHelper disableLoginItemForBundle:applicationBundle];
   }
+  _loginItemCheckbox.state = [SpectacleLoginItemHelper isLoginItemEnabledForBundle:applicationBundle]
+    ? NSControlStateValueOn
+    : NSControlStateValueOff;
 }
 
 - (IBAction)toggleStatusItem:(id)sender
 {
   BOOL enabled = (_statusItemPopup.indexOfSelectedItem == 0);
+  NSUserDefaults *userDefaults = NSUserDefaults.standardUserDefaults;
+  if (!enabled && ![userDefaults boolForKey:@"BackgroundAlertSuppressed"]) {
+    [SpectacleUtilities displayRunningInBackgroundAlertWithCallback:^(BOOL isConfirmed, BOOL isSuppressed) {
+      if (!isConfirmed) {
+        [self->_statusItemPopup selectItemAtIndex:0];
+        return;
+      }
+      [userDefaults setBool:isSuppressed forKey:@"BackgroundAlertSuppressed"];
+      [userDefaults setBool:NO forKey:@"StatusItemEnabled"];
+      [[NSNotificationCenter defaultCenter] postNotificationName:@"SpectacleStatusItemDisabledNotification" object:self];
+    }];
+    return;
+  }
   NSString *notificationName = enabled ? @"SpectacleStatusItemEnabledNotification" : @"SpectacleStatusItemDisabledNotification";
-  [NSUserDefaults.standardUserDefaults setBool:enabled forKey:@"StatusItemEnabled"];
+  [userDefaults setBool:enabled forKey:@"StatusItemEnabled"];
   [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
 }
 

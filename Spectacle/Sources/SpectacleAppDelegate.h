@@ -2,7 +2,7 @@
 
 @class SpectaclePreferencesController;
 
-@interface SpectacleAppDelegate : NSObject <NSApplicationDelegate>
+@interface SpectacleAppDelegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
 - (IBAction)showPreferencesWindow:(id)sender;
 

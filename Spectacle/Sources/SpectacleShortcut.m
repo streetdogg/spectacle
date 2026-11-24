@@ -55,9 +55,14 @@
                                           shortcutAction:shortcutAction];
 }
 
++ (BOOL)supportsSecureCoding
+{
+  return YES;
+}
+
 - (instancetype)initWithCoder:(NSCoder *)coder
 {
-  return [self initWithShortcutName:[coder decodeObjectForKey:@"name"]
+  return [self initWithShortcutName:[coder decodeObjectOfClass:[NSString class] forKey:@"name"]
                     shortcutKeyCode:[coder decodeIntegerForKey:@"keyCode"]
                   shortcutModifiers:[coder decodeIntegerForKey:@"modifiers"]];
 }
