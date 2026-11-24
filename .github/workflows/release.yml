@@ -1,0 +1,93 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure master branch ref exists for build number script
+        run: |
+          if ! git show-ref --verify --quiet refs/heads/master; then
+            git branch master origin/master 2>/dev/null || git branch master HEAD
+          fi
+
+      - name: Build Spectacle (Release, arm64)
+        run: |
+          xcodebuild \
+            -project Spectacle.xcodeproj \
+            -scheme Spectacle \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            ARCHS=arm64 \
+            clean build
+
+      - name: Package DMG, ZIP, and checksums
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' 'Spectacle/Supporting Files/Info.plist')-${GITHUB_SHA::7}"
+          fi
+
+          APP_PATH="build/DerivedData/Build/Products/Release/Spectacle.app"
+          DIST_DIR="build/dist"
+          DMG_STAGE="build/dmg-stage"
+
+          mkdir -p "$DIST_DIR" "$DMG_STAGE"
+          cp -R "$APP_PATH" "$DMG_STAGE/"
+          ln -s /Applications "$DMG_STAGE/Applications"
+          cp LICENSE.md "$DMG_STAGE/"
+
+          DMG_NAME="Spectacle-${VERSION}-arm64.dmg"
+          ZIP_NAME="Spectacle-${VERSION}-arm64.zip"
+
+          hdiutil create \
+            -volname "Spectacle ${VERSION}" \
+            -srcfolder "$DMG_STAGE" \
+            -ov -format UDZO \
+            "$DIST_DIR/$DMG_NAME"
+
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$DIST_DIR/$ZIP_NAME"
+
+          (cd "$DIST_DIR" && shasum -a 256 "$DMG_NAME" "$ZIP_NAME" > SHA256SUMS.txt)
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## Installation (Apple Silicon, macOS 13+)
+
+            1. Download the `.dmg` (or `.zip`) below and copy **Spectacle.app** to `/Applications`.
+            2. Because this build is ad-hoc signed (not notarized with an Apple Developer ID), macOS Gatekeeper may block it on first launch. To allow it, either:
+               - Run:
+                 ```bash
+                 xattr -dr com.apple.quarantine /Applications/Spectacle.app
+                 ```
+               - Or open **System Settings → Privacy & Security** and click **Open Anyway**.
+            3. On first launch, grant Accessibility permission in **System Settings → Privacy & Security → Accessibility** (if upgrading from a previous ad-hoc build, remove the old entry with `-` and re-add Spectacle, then relaunch).
+          files: |
+            build/dist/*.dmg
+            build/dist/*.zip
+            build/dist/SHA256SUMS.txt
+
+      - name: Upload Workflow Artifacts (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Spectacle-arm64
+          path: build/dist/*

@@ -4,6 +4,18 @@
 
 Easily organize windows without using a mouse.
 
+## Apple Silicon Build (macOS 13+)
+
+This fork is modernized to build and run natively on Apple Silicon (`arm64`, macOS 13.0+). Prebuilt `.dmg` and `.zip` binaries are published on the GitHub **Releases** page.
+
+Because releases are ad-hoc signed (not notarized with a paid Apple Developer ID), macOS Gatekeeper may warn on first launch. After copying `Spectacle.app` to `/Applications`, either:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Spectacle.app
+```
+
+or allow it in **System Settings → Privacy & Security** (**Open Anyway**). When upgrading between ad-hoc builds, remove and re-add Spectacle in **System Settings → Privacy & Security → Accessibility**, then relaunch.
+
 ## Important Note
 
 **This project is not being actively maintained.** Unfortunately, after almost a decade of on-and-off development I can no longer dedicate the time needed to be a responsible maintainer of this project. Spectacle will remain available for download but please use at your own risk. The source code will continue to be free and open to anyone, so feel free to make Spectacle your own.
