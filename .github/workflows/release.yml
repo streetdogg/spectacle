@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,6 +32,7 @@ jobs:
             -configuration Release \
             -derivedDataPath build/DerivedData \
             ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
             clean build
 
       - name: Package DMG, ZIP, and checksums
