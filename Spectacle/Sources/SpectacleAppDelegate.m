@@ -8,6 +8,7 @@
 #import "SpectacleShortcutJSONStorage.h"
 #import "SpectacleShortcutManager.h"
 #import "SpectacleShortcutUserDefaultsStorage.h"
+#import "SpectacleUpdateController.h"
 #import "SpectacleUtilities.h"
 #import "SpectacleWindowPositionCalculator.h"
 #import "SpectacleWindowPositionManager.h"
@@ -69,6 +70,8 @@
   if (!AXIsProcessTrustedWithOptions(NULL)) {
     [self displayAccessibilityPrompt];
   }
+
+  [[SpectacleUpdateController sharedController] startAutomaticUpdateChecksIfEnabled];
 }
 
 - (void)dealloc
@@ -111,9 +114,15 @@
   aboutItem.target = self;
   [menu addItem:aboutItem];
 
+  NSMenuItem *checkUpdatesItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"MenuItemTitleCheckForUpdates", @"Check for Updates menu item")
+                                                            action:@selector(checkForUpdates:)
+                                                     keyEquivalent:@""];
+  checkUpdatesItem.target = self;
+  [menu addItem:checkUpdatesItem];
+
   [menu addItem:[NSMenuItem separatorItem]];
 
-  NSMenuItem *preferencesItem = [[NSMenuItem alloc] initWithTitle:@"Preferences…"
+  NSMenuItem *preferencesItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"MenuItemTitleSettings", @"Settings menu item title")
                                                            action:@selector(showPreferencesWindow:)
                                                     keyEquivalent:@","];
   preferencesItem.target = self;
@@ -253,6 +262,7 @@
     [_shortcutManager unregisterShortcuts];
   }
   [NSUserDefaults.standardUserDefaults setObject:_disabledApplications.allObjects forKey:@"DisabledApplications"];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"SpectacleDisabledApplicationsDidChangeNotification" object:self];
 }
 
 #pragma mark - Actions
@@ -273,6 +283,11 @@
 {
   [self activateApplication];
   [NSApp orderFrontStandardAboutPanel:sender];
+}
+
+- (IBAction)checkForUpdates:(id)sender
+{
+  [[SpectacleUpdateController sharedController] checkForUpdatesInitiatedByUser:YES];
 }
 
 - (IBAction)showPreferencesWindow:(id)sender
@@ -333,7 +348,22 @@
                                            selector:@selector(disableStatusItem)
                                                name:@"SpectacleStatusItemDisabledNotification"
                                              object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(disabledApplicationsDidChange:)
+                                               name:@"SpectacleDisabledApplicationsDidChangeNotification"
+                                             object:nil];
   [self observeWorkspaceNotifications];
+}
+
+- (void)disabledApplicationsDidChange:(NSNotification *)notification
+{
+  if (notification.object == self) {
+    return;
+  }
+  NSArray<NSString *> *stored = [NSUserDefaults.standardUserDefaults arrayForKey:@"DisabledApplications"] ?: @[];
+  _disabledApplications = [NSMutableSet setWithArray:stored];
+  [self disableShortcutsIfFrontmostApplicationIsBlacklistedOrDisabled];
+  [self enableShortcutsIfPermitted];
 }
 
 - (void)applicationDidActivate:(NSNotification *)notification

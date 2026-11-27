@@ -14,6 +14,16 @@ NSArray<SpectacleShortcut *> *SpectacleDefaultShortcutsWithAction(SpectacleShort
   return defaultShortcuts;
 }
 
+SpectacleShortcut *SpectacleDefaultShortcutForNameWithAction(NSString *shortcutName, SpectacleShortcutAction action)
+{
+  for (SpectacleShortcut *defaultShortcut in builtinDefaultShortcuts()) {
+    if ([defaultShortcut.shortcutName isEqualToString:shortcutName]) {
+      return [defaultShortcut copyWithShortcutAction:action];
+    }
+  }
+  return nil;
+}
+
 static NSArray<SpectacleShortcut *> *builtinDefaultShortcuts(void)
 {
   return @[

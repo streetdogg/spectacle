@@ -118,6 +118,11 @@ static EventHotKeyID currentShortcutID = {
   return NO;
 }
 
+- (BOOL)areShortcutsEnabled
+{
+  return _areShorcutsEnabled;
+}
+
 - (void)registerShortcuts
 {
   if (_areShorcutsEnabled) {

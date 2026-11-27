@@ -2,6 +2,40 @@
 
 @implementation SpectacleShortcutJSONStorage
 
++ (NSData *)JSONDataFromShortcuts:(NSArray<SpectacleShortcut *> *)shortcuts error:(NSError **)error
+{
+  return [NSJSONSerialization dataWithJSONObject:jsonObjectFromShortcuts(shortcuts)
+                                         options:NSJSONWritingPrettyPrinted
+                                           error:error];
+}
+
++ (NSArray<SpectacleShortcut *> *)shortcutsFromJSONData:(NSData *)data
+                                                 action:(SpectacleShortcutAction)action
+                                                  error:(NSError **)error
+{
+  id jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:error];
+  if (![jsonObject isKindOfClass:[NSArray class]]) {
+    if (error && !*error) {
+      *error = [NSError errorWithDomain:NSCocoaErrorDomain
+                                   code:NSPropertyListReadCorruptError
+                               userInfo:@{NSLocalizedDescriptionKey: NSLocalizedString(@"AlertInformativeTextImportInvalidFile", @"Error shown when imported shortcuts file is invalid")}];
+    }
+    return nil;
+  }
+  NSArray *jsonArray = (NSArray *)jsonObject;
+  for (id item in jsonArray) {
+    if (![item isKindOfClass:[NSDictionary class]] || ![item[@"shortcut_name"] isKindOfClass:[NSString class]]) {
+      if (error) {
+        *error = [NSError errorWithDomain:NSCocoaErrorDomain
+                                     code:NSPropertyListReadCorruptError
+                                 userInfo:@{NSLocalizedDescriptionKey: NSLocalizedString(@"AlertInformativeTextImportInvalidFile", @"Error shown when imported shortcuts file is invalid")}];
+      }
+      return nil;
+    }
+  }
+  return shortcutsFromJsonObject(jsonArray, action);
+}
+
 - (NSArray<SpectacleShortcut *> *)loadShortcutsWithAction:(SpectacleShortcutAction)action
 {
   NSError *error;

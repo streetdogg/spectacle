@@ -11,4 +11,10 @@
 - (void)shortcutRecorder:(SpectacleShortcutRecorder *)shortcutRecorder
 didClearExistingShortcut:(SpectacleShortcut *)shortcut;
 
+@optional
+
+- (void)shortcutRecorderDidStartRecording:(SpectacleShortcutRecorder *)shortcutRecorder;
+- (void)shortcutRecorderDidStopRecording:(SpectacleShortcutRecorder *)shortcutRecorder;
+- (void)shortcutRecorderDidRequestResetToDefault:(SpectacleShortcutRecorder *)shortcutRecorder;
+
 @end

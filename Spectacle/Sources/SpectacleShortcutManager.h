@@ -24,6 +24,8 @@ SPECTACLE_INIT_AND_NEW_UNAVAILABLE
 
 - (BOOL)doesShortcutExist:(SpectacleShortcut *)shortcut;
 
+@property (nonatomic, readonly, getter=areShortcutsEnabled) BOOL shortcutsEnabled;
+
 - (void)registerShortcuts;
 - (void)unregisterShortcuts;
 

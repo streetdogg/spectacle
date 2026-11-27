@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		07838603148BD517001E7BD7 /* SpectaclePreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07838602148BD517001E7BD7 /* SpectaclePreferencesController.m */; };
+		A1B2C3D4148BD517001E7BD7 /* SpectacleUpdateController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D3148BD517001E7BD7 /* SpectacleUpdateController.m */; };
 		2D0759A71C71746500A17E80 /* SpectacleWindowPositionCalculationRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D0759A61C71746500A17E80 /* SpectacleWindowPositionCalculationRegistry.m */; };
 		2D1AE52515D715F400EAC5BD /* SpectacleRegisteredShortcutValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D1AE52415D715F400EAC5BD /* SpectacleRegisteredShortcutValidator.m */; };
 		2D20F0181CD18ED7003DDA5B /* SpectacleBottomHalfWindowCalculationSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D20F0081CD18ED7003DDA5B /* SpectacleBottomHalfWindowCalculationSpec.m */; };
@@ -112,6 +113,8 @@
 		077938E51184FADB0013BC14 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = main.m; path = "Spectacle/Supporting Files/main.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		07838601148BD517001E7BD7 /* SpectaclePreferencesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpectaclePreferencesController.h; path = Spectacle/Sources/SpectaclePreferencesController.h; sourceTree = "<group>"; };
 		07838602148BD517001E7BD7 /* SpectaclePreferencesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SpectaclePreferencesController.m; path = Spectacle/Sources/SpectaclePreferencesController.m; sourceTree = "<group>"; };
+		A1B2C3D2148BD517001E7BD7 /* SpectacleUpdateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpectacleUpdateController.h; path = Spectacle/Sources/SpectacleUpdateController.h; sourceTree = "<group>"; };
+		A1B2C3D3148BD517001E7BD7 /* SpectacleUpdateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SpectacleUpdateController.m; path = Spectacle/Sources/SpectacleUpdateController.m; sourceTree = "<group>"; };
 		079CDA0D1221BAFF0099612C /* SpectacleHistoryItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpectacleHistoryItem.h; path = Spectacle/Sources/SpectacleHistoryItem.h; sourceTree = "<group>"; };
 		079CDA0E1221BAFF0099612C /* SpectacleHistoryItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SpectacleHistoryItem.m; path = Spectacle/Sources/SpectacleHistoryItem.m; sourceTree = "<group>"; };
 		07BB542B1186662F0045663F /* SpectacleUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = SpectacleUtilities.h; path = Spectacle/Sources/SpectacleUtilities.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -262,6 +265,8 @@
 				2DC8A0161B85097900ABEBD5 /* SpectacleLoginItemHelper.m */,
 				07838601148BD517001E7BD7 /* SpectaclePreferencesController.h */,
 				07838602148BD517001E7BD7 /* SpectaclePreferencesController.m */,
+				A1B2C3D2148BD517001E7BD7 /* SpectacleUpdateController.h */,
+				A1B2C3D3148BD517001E7BD7 /* SpectacleUpdateController.m */,
 			);
 			name = Preferences;
 			sourceTree = "<group>";
@@ -685,6 +690,7 @@
 				2DC8A0171B85097900ABEBD5 /* SpectacleLoginItemHelper.m in Sources */,
 				2D5A83091CDB020A00EBE80A /* SpectacleMigratingShortcutStorage.m in Sources */,
 				07838603148BD517001E7BD7 /* SpectaclePreferencesController.m in Sources */,
+				A1B2C3D4148BD517001E7BD7 /* SpectacleUpdateController.m in Sources */,
 				2DAC59F01BB238D900C660ED /* SpectacleQuantizedWindowMover.m in Sources */,
 				2D1AE52515D715F400EAC5BD /* SpectacleRegisteredShortcutValidator.m in Sources */,
 				2D2629461CCECB9E009D1ED0 /* SpectacleScreenDetectionResult.m in Sources */,
